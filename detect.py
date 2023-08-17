@@ -124,7 +124,7 @@ myCam = PiVideoStream(resolution=(dispW,dispH), framerate=frameRate, webCam_Flag
 # starting the thread for capturing frames
 myCam.start()
 
-myTrack = Tracking(tiltAngle=-30, disp={'width': dispW, 'height':dispH}, filtering_box=True)
+myTrack = Tracking(tiltAngle=-30, disp={'width': dispW, 'height':dispH}, filtering_box=True, low_freq_factor=.9)
 
 while True:
     frame= myCam.getFrame()
@@ -140,20 +140,32 @@ while True:
         imTensor=vision.TensorImage.create_from_array(imRGB)
         myDetects=myCam.detector.detect(imTensor)
         #print('\n', myDetects)
+        x_box, y_box = 0, 0
+        box_width, box_height = 0, 0
         for myDetect in myDetects.detections:
             objName = myDetect.categories[0].category_name
-            if objName == "person":
+            if objName == "bottle":
                 x_box, y_box = myDetect.bounding_box.origin_x, myDetect.bounding_box.origin_y
                 box_width, box_height = x_box + myDetect.bounding_box.width, y_box + myDetect.bounding_box.height
+                # UL = (x_box, y_box)
+                # LR = (box_width, box_height)
 
-        # dim={'x_box': x_box,'y_box':y_box,'width_box':w_face, 'height_box': h_face}
-        # myTrack.movement(dim)
-            
+                # frame = cv2.rectangle(frame,UL, LR,boxColor, boxWeight)
+                # objName = myDetect.categories[0].category_name
+                # cv2.putText(frame,objName,UL, font, labelHeight, labelColor, labelWeight)
+                # break
+
             UL = (myDetect.bounding_box.origin_x, myDetect.bounding_box.origin_y)
             LR = (UL[0] + myDetect.bounding_box.width, UL[1] + myDetect.bounding_box.height)
             frame = cv2.rectangle(frame,UL, LR,boxColor, boxWeight)
             objName = myDetect.categories[0].category_name
             cv2.putText(frame,objName,UL, font, labelHeight, labelColor, labelWeight)
+
+        if x_box:
+            dim={'x_box': x_box,'y_box':y_box,'width_box':int(box_width/2), 'height_box': int(box_height/2)}
+            myTrack.movement(dim)
+            
+            
             
 
         # image=utils.visualize(frame,myDetects)
