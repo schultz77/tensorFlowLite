@@ -144,7 +144,7 @@ while True:
         box_width, box_height = 0, 0
         for myDetect in myDetects.detections:
             objName = myDetect.categories[0].category_name
-            if objName == "bottle":
+            if objName == "person":
                 x_box, y_box = myDetect.bounding_box.origin_x, myDetect.bounding_box.origin_y
                 box_width, box_height = x_box + myDetect.bounding_box.width, y_box + myDetect.bounding_box.height
                 # UL = (x_box, y_box)
